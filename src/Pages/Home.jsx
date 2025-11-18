@@ -1,0 +1,98 @@
+import React, { useEffect, useState } from "react";
+import { fetchStockData } from "../api/stocks";
+
+const INITIAL_COUNT = 20;
+const LOAD_MORE_COUNT = 15;
+
+export default function Home() {
+  const [stocks, setStocks] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const [loading, setLoading] = useState(true);
+  const [scrollLoading, setScrollLoading] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await fetchStockData();
+        setStocks(data);
+      } catch (err) {
+        console.error("Error fetching stocks:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, []);
+
+  // Infinite Scroll Effect
+  useEffect(() => {
+    function handleScroll() {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.body.offsetHeight - 200
+      ) {
+        if (!scrollLoading && visibleCount < stocks.length) {
+          setScrollLoading(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + LOAD_MORE_COUNT);
+            setScrollLoading(false);
+          }, 800);
+        }
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [scrollLoading, visibleCount, stocks.length]);
+
+  const visibleStocks = stocks.slice(0, visibleCount);
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        📈 Stock Companies
+      </h1>
+
+      {loading ? (
+        <div className="text-center text-xl font-semibold">Loading...</div>
+      ) : (
+        <div className="overflow-x-auto shadow-lg rounded-lg">
+          <table className="min-w-full bg-white border border-gray-200">
+            <thead className="bg-gray-900 text-white uppercase text-sm">
+              <tr>
+                <th className="py-3 px-4 text-left">Symbol</th>
+                <th className="py-3 px-4 text-left">Name</th>
+                <th className="py-3 px-4 text-left">Exchange</th>
+                <th className="py-3 px-4 text-left">Asset Type</th>
+                <th className="py-3 px-4 text-left">IPO Date</th>
+                <th className="py-3 px-4 text-left">Status</th>
+              </tr>
+            </thead>
+
+            <tbody className="text-sm text-gray-700">
+              {visibleStocks.map((s) => (
+                <tr key={s.symbol} className="border-b hover:bg-gray-50">
+                  <td className="py-2 px-4 font-medium text-blue-600 cursor-pointer">
+                    {s.symbol}
+                  </td>
+                  <td className="py-2 px-4">{s.name}</td>
+                  <td className="py-2 px-4">{s.exchange}</td>
+                  <td className="py-2 px-4">{s.assetType}</td>
+                  <td className="py-2 px-4">{s.ipoDate}</td>
+                  <td className="py-2 px-4">{s.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {scrollLoading && (
+            <div className="text-center py-4 text-gray-600">
+              Loading more stocks...
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
