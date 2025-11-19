@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchStockData } from "../api/stocks";
+import { useNavigate } from "react-router-dom";
 
 const INITIAL_COUNT = 20;
 const LOAD_MORE_COUNT = 15;
@@ -47,6 +48,7 @@ export default function Home() {
   }, [scrollLoading, visibleCount, stocks.length]);
 
   const visibleStocks = stocks.slice(0, visibleCount);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -76,7 +78,13 @@ export default function Home() {
                   <td className="py-2 px-4 font-medium text-blue-600 cursor-pointer">
                     {s.symbol}
                   </td>
-                  <td className="py-2 px-4">{s.name}</td>
+                  <td
+                    className="py-2 px-4 text-blue-600 cursor-pointer hover:underline"
+                    onClick={() => navigate(`/company/${s.symbol}`)}
+                  >
+                    {s.name}
+                  </td>
+
                   <td className="py-2 px-4">{s.exchange}</td>
                   <td className="py-2 px-4">{s.assetType}</td>
                   <td className="py-2 px-4">{s.ipoDate}</td>

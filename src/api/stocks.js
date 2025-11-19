@@ -20,10 +20,36 @@ export async function fetchStockData() {
     .map((row) => row.split(","))
     .filter((r) => r.length > 3)
     .map(
-      ([symbol,name,exchange,assetType,ipoDate,delistingDate,status,]) =>
-         ({symbol,name,exchange,assetType,ipoDate,delistingDate,status,
+      ([
+        symbol,
+        name,
+        exchange,
+        assetType,
+        ipoDate,
+        delistingDate,
+        status,
+      ]) => ({
+        symbol,
+        name,
+        exchange,
+        assetType,
+        ipoDate,
+        delistingDate,
+        status,
       })
     );
 
   return data.slice(0, 500);
+}
+
+export async function fetchCompanyOverview(symbol) {
+  const url = `${BASE_URL}?function=OVERVIEW&symbol=${symbol}&apikey=${API_KEY}`;
+  const res = await fetch(url);
+  const json = await res.json();
+
+  if (!json || Object.keys(json).length === 0) {
+    return { error: "API limit reached or no data available" };
+  }
+
+  return json;
 }
