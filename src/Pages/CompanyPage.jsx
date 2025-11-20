@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { fetchCompanyOverview } from "../api/stocks";
 import { useParams, Link } from "react-router-dom";
+import CompanyChart from "../Components/CompanyChart";
 
 export default function CompanyPage() {
   const { symbol } = useParams();
   const [info, setInfo] = useState(null);
+
+  const chartData = [
+    { month: "Jan", revenue: 120 },
+    { month: "Feb", revenue: 150 },
+    { month: "Mar", revenue: 170 },
+    { month: "Apr", revenue: 160 },
+    { month: "May", revenue: 190 },
+    { month: "Jun", revenue: 210 },
+  ];
 
   useEffect(() => {
     async function load() {
@@ -45,6 +55,7 @@ export default function CompanyPage() {
         </p>
         <p className="mt-3 text-gray-700">{info.Description}</p>
       </div>
+      <CompanyChart data={chartData} />
     </div>
   );
 }
