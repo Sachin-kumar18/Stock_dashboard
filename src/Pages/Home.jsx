@@ -10,6 +10,17 @@ export default function Home() {
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [loading, setLoading] = useState(true);
   const [scrollLoading, setScrollLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     async function load() {
@@ -47,14 +58,33 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrollLoading, visibleCount, stocks.length]);
 
-  const visibleStocks = stocks.slice(0, visibleCount);
-  const navigate = useNavigate();
+  const filtered = stocks.filter(
+    (s) =>
+      s.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      s.symbol.toLowerCase().includes(debouncedSearch.toLowerCase())
+  );
+
+  const visibleFiltered = filtered.slice(0, visibleCount);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold mb-6 text-center">
         📈 Stock Companies
       </h1>
+      <div className="relative mb-6 max-w-xl mx-auto">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+          🔍
+        </span>
+
+        <input
+          type="text"
+          placeholder="Search companies..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-300 bg-white shadow-sm
+               focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+        />
+      </div>
 
       {loading ? (
         <div className="text-center text-xl font-semibold">Loading...</div>
@@ -73,9 +103,12 @@ export default function Home() {
             </thead>
 
             <tbody className="text-sm text-gray-700">
-              {visibleStocks.map((s) => (
+              {visibleFiltered.map((s) => (
                 <tr key={s.symbol} className="border-b hover:bg-gray-50">
-                  <td className="py-2 px-4 font-medium text-blue-600 cursor-pointer">
+                  <td
+                    className="py-2 px-4 font-medium text-blue-600 cursor-pointer hover:underline"
+                    onClick={() => navigate(`/company/${s.symbol}`)}
+                  >
                     {s.symbol}
                   </td>
                   <td
